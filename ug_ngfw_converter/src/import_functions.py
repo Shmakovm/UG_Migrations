@@ -1154,17 +1154,26 @@ def import_local_groups(parent, path):
         # Добавляем доменных пользователей в группу.
         for user_name in users:
             user_array = user_name.split(' ')
-            if len(user_array) > 1 and ('\\' in user_array[1]):
-                domain, name = user_array[1][1:len(user_array[1])-1].split('\\')
+            #parent.stepChanged.emit(f'BLACK|   {user_array}')
+
+            a = 0
+            while a < len(user_array):
+                if '\\' in user_array[a]:
+                    idx = a
+                a += 1
+
+            if len(user_array) > 1 and ('\\' in user_array[idx]):
+                domain, name = user_array[idx][1:len(user_array[idx])-1].split('\\')
+                #parent.stepChanged.emit(f'GREEN|       {item["name"]} {domain} {name}')
                 err1, result1 = parent.utm.get_ldap_user_guid(domain, name)
                 if err1:
                     parent.stepChanged.emit(f'RED|    {result1}')
                     error = 1
                     break
                 elif not result1:
-                    parent.stepChanged.emit(f'bRED|    Нет LDAP-коннектора для домена "{domain}"! Доменные пользователи не импортированы в группу "{item["name"]}".')
+                    parent.stepChanged.emit(f'bRED|    Нет LDAP-коннектора для домена "{domain}"! Доменные пользователя "{name}" не импортированы в группу "{item["name"]}".')
                     parent.stepChanged.emit(f'bRED|    Импортируйте и настройте LDAP-коннектор. Затем повторите импорт групп.')
-                    break
+                    continue
                 err2, result2 = parent.utm.add_user_in_group(parent.ngfw_data['local_groups'][item['name']], result1)
                 if err2:
                     parent.stepChanged.emit(f'RED|    {result2}  [{user_name}]')
@@ -2027,7 +2036,7 @@ def import_firewall_rules(parent, path):
             else:
                 parent.stepChanged.emit(f'BLACK|    Правило МЭ "{item["name"]}" updated.')
         else:
-#            item['enabled'] = False
+            item['enabled'] = False
             err, result = parent.utm.add_firewall_rule(item)
             if err:
                 error = 1
