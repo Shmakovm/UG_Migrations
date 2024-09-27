@@ -335,6 +335,7 @@ def export_certificates(parent, path):
         parent.error = 1
         error = 1
     else:
+
         for item in result:
             item.pop('cc', None)
             if parent.version >= 7.1:
@@ -380,8 +381,14 @@ def export_certificates(parent, path):
                     error = 1
                 else:
                     if parent.version >= 7.1:
+
+                        for certchain in details_info['chain']:
+                            certchain['notBefore'] = dt.strptime(certchain['notBefore'].value, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S")
+                            certchain['notAfter'] = dt.strptime(certchain['notAfter'].value, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S")
+
                         details_info['notBefore'] = dt.strptime(details_info['notBefore'].value, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S")
                         details_info['notAfter'] = dt.strptime(details_info['notAfter'].value, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S")
+
                     json_file = os.path.join(path_cert, 'certificate_details.json')
                     with open(json_file, 'w') as fh:
                         json.dump(details_info, fh, indent=4, ensure_ascii=False)
@@ -2063,7 +2070,10 @@ def export_ssldecrypt_rules(parent, path):
             item['url_categories'] = get_url_categories_name(parent, item['url_categories'], item['name'])
             item['urls'] = get_urls_name(parent, item['urls'], item['name'])
             item['time_restrictions'] = get_time_restrictions_name(parent, item['time_restrictions'], item['name'])
-            item['ssl_profile_id'] = parent.ngfw_data['ssl_profiles'][item['ssl_profile_id']] if 'ssl_profile_id' in item else 'Default SSL profile'
+            if item['action'] == 'pass':
+                item['ssl_profile_id'] = -1
+            else:
+                item['ssl_profile_id'] = parent.ngfw_data['ssl_profiles'][item['ssl_profile_id']] #if 'ssl_profile_id' in item else 'Default SSL profile'
             item['ssl_forward_profile_id'] = ssl_forward_profiles[item['ssl_forward_profile_id']] if 'ssl_forward_profile_id' in item else -1
             if parent.version < 6:
                 item['position_layer'] = 'local'
@@ -2650,7 +2660,7 @@ def export_reverseproxy_rules(parent, path):
         return
     reverse_servers = {x['id']: x['name'].strip().translate(trans_name) for x in result}
 
-    if parent.version >= 7.1:
+    if parent.version >= 7.3:  # change
         err, result = parent.utm.get_client_certificate_profiles()
         if err:
             parent.stepChanged.emit(f'RED|    {result}')
@@ -2715,7 +2725,7 @@ def export_reverseproxy_rules(parent, path):
                 except KeyError as err:
                     parent.stepChanged.emit(f'bRED|    Error [Правило "{item["name"]}"]. Указан несуществующий сервер reverse-прокси или балансировщик.')
                     x = ['profile', 'Example reverse proxy server']
-            if parent.version < 7.1:
+            if parent.version < 7.3:  # change
                 item['user_agents_negate'] = False
                 item['waf_profile_id'] = 0
                 item['client_certificate_profile_id'] = 0
