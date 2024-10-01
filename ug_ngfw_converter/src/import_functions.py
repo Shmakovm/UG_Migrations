@@ -1156,11 +1156,9 @@ def import_local_groups(parent, path):
             user_array = user_name.split(' ')
             #parent.stepChanged.emit(f'BLACK|   {user_array}')
 
-            a = 0
-            while a < len(user_array):
+            for a in range(0, len(user_array)):
                 if '\\' in user_array[a]:
                     idx = a
-                a += 1
 
             if len(user_array) > 1 and ('\\' in user_array[idx]):
                 domain, name = user_array[idx][1:len(user_array[idx])-1].split('\\')
