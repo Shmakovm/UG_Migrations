@@ -1305,7 +1305,7 @@ class ImportNgfwSelectedPoints(QThread, ReadWriteBinFile, MyMixedService):
         
             new_routes = {}
             for x in item['routes']:
-                x['enabled'] = False
+                x['enabled'] = True
                 error, x['name'] = self.get_transformed_name(x['name'], err=error, descr='Имя route')
                 if x['name'] in new_routes:
                     self.stepChanged.emit(f'bRED|    Warning: [VRF "{item["name"]}"] Дубликат route "{x["name"]}" удалён.')
@@ -1507,8 +1507,15 @@ class ImportNgfwSelectedPoints(QThread, ReadWriteBinFile, MyMixedService):
             # Добавляем доменных пользователей в группу.
             for user_name in users:
                 user_array = user_name.split(' ')
-                if len(user_array) > 1 and ('\\' in user_array[1]):
-                    domain, name = user_array[1][1:len(user_array[1])-1].split('\\')
+#                if len(user_array) > 1 and ('\\' in user_array[1]):
+#                    domain, name = user_array[1][1:len(user_array[1])-1].split('\\')
+                for a in range(0, len(user_array)):
+                    if '\\' in user_array[a]:
+                        idx = a
+
+                if len(user_array) > 1 and ('\\' in user_array[idx]):
+                    domain, name = user_array[idx][1:len(user_array[idx])-1].split('\\')
+
                     err1, result1 = self.utm.get_ldap_user_guid(domain, name)
                     if err1:
                         self.stepChanged.emit(f'RED|       {result1} [Не удалось получить GUID пользователя {user_name} из домена {domain}]')
@@ -1516,11 +1523,12 @@ class ImportNgfwSelectedPoints(QThread, ReadWriteBinFile, MyMixedService):
                         break
                     elif not result1:
                         message = (
-                            f'    Нет LDAP-коннектора для домена "{domain}". Доменные пользователи не импортированы в группу "{item["name"]}".\n'
+                            f'    Нет LDAP-коннектора для домена "{domain}" или пользователь "{name}" не найден в домене "{domain}". Доменный пользователь "{name}" не импортирован в группу "{item["name"]}".\n'
                             f'    Импортируйте и настройте LDAP-коннектор. Затем повторите импорт групп.'
                         )
                         self.stepChanged.emit(f'bRED|{message}')
-                        break
+#                        break
+                        continue
                     err2, result2 = self.utm.add_user_in_group(self.ngfw_data['local_groups'][item['name']], result1)
                     if err2:
                         self.stepChanged.emit(f'RED|       {result2}  [Пользователь "{user_name}" не добавлен в группу "{item["name"]}"]')
