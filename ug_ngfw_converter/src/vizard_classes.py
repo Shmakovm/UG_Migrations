@@ -301,7 +301,7 @@ class SelectMode(QWidget):
     def _save_logs(self, log_file):
         """Сохраняем лог из log_list в файл "log_file" в текущей директории"""
         today = dt.now()
-        path_logfile = os.path.join(self.parent.get_config_path(), f'{today:%Y-%m-%d_%M:%S}-{log_file}')
+        path_logfile = os.path.join(self.parent.get_config_path(), f'{today:%Y-%m-%d_%H%M%S}-{log_file}')
         list_items = [self.log_list.item(row).text() for row in range(self.log_list.count())]
         with open(path_logfile, 'w') as fh:
             print(*list_items, sep='\n', file=fh)
@@ -762,7 +762,7 @@ class SelectMcExportMode(QWidget):
     def _save_logs(self):
         """Сохраняем лог из log_list в файл "log_file" в текущей директории"""
         today = dt.now()
-        path_logfile = os.path.join(self.parent.mc_base_path, f'{today:%Y-%m-%d_%M%S}-export_{self.device}_{self.selected_group}.log')
+        path_logfile = os.path.join(self.parent.mc_base_path, f'{today:%Y-%m-%d_%H%M%S}-export_{self.device}_{self.selected_group}.log')
         list_items = [self.log_list.item(row).text() for row in range(self.log_list.count())]
         with open(path_logfile, 'w') as fh:
             print(*list_items, sep='\n', file=fh)
@@ -1622,7 +1622,7 @@ class SelectMcTemplateGroupImport(QWidget):
     def _save_logs(self):
         """Сохраняем лог из log_list в файл "log_file" в текущей директории"""
         today = dt.now()
-        path_logfile = os.path.join(self.parent.mc_base_path, f'{today:%Y-%m-%d_%M%S}-import_{self.device}_{self.selected_group}.log')
+        path_logfile = os.path.join(self.parent.mc_base_path, f'{today:%Y-%m-%d_%H%M%S}-import_{self.device}_{self.selected_group}.log')
         list_items = [self.log_list.item(row).text() for row in range(self.log_list.count())]
         with open(path_logfile, 'w') as fh:
             print(*list_items, sep='\n', file=fh)
